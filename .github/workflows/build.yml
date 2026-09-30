@@ -1,0 +1,35 @@
+name: Build Termux-X11 From Scratch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobranie kodu źródłowego Termux-X11
+        uses: actions/checkout@v4
+        with:
+          repository: termux/termux-x11
+          submodules: recursive
+          ref: master
+
+      - name: Konfiguracja środowiska Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Konfiguracja Android SDK i NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Kompilacja projektu
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace
+
+      - name: Zapisanie gotowego pliku APK jako artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: termux-x11-release-apk
+          path: '**/build/outputs/apk/release/*.apk'
